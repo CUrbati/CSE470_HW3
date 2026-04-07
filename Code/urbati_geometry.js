@@ -25,14 +25,14 @@ normals = [];
 
 
 function generateSOR() {
-
-    for (let theta = thetaDomain.min; theta < thetaDomain.max; theta += 0.1) {
-        for (let t = tDomain.min; t <= tDomain.max; t += 0.1) {
+    for (let t = tDomain.min; t <= tDomain.max; t += 0.1){
+        for (let theta = thetaDomain.min; theta < thetaDomain.max; theta += 0.1) {
             vertices.push(SOR(theta, t));
-            normals.push(vec3(Math.cos(theta), 0, Math.sin(theta)));
         }
     }
 }
+
+
 
 
 
