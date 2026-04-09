@@ -10,6 +10,8 @@ var lightSpecular = vec4(1.0, 1.0, 1.0, 1.0);
 
 var materialNum = 0;
 var objectNum = 0;
+var t = 0;
+var loopLight = false;
 // eye location and parameters to move
 var viewer = 
 {
@@ -423,6 +425,8 @@ window.onload = function init()
          gl.bindBuffer( gl.ARRAY_BUFFER, vBuffer );
          gl.bufferData( gl.ARRAY_BUFFER, flatten(vertices), gl.STATIC_DRAW );
       }
+
+
    }
    render();
 
@@ -446,7 +450,15 @@ function render()
 
 	gl.drawElements( gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0 );
 	
+   if(loopLight){
+      gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"),
+         flatten(vec4(3*Math.cos(t) + center[0], 0.0 + center[1], 3*Math.sin(t) + center[2], 1.0)) );
+      t += 0.05;
 
+   }else{
+      gl.uniform4fv(gl.getUniformLocation(program, "lightPosition"),
+         flatten(lightPosition) );
+   }
     
     requestAnimFrame( render );
 }
@@ -456,4 +468,6 @@ function render()
 function formatOut (input, decimals) {
   return Math.floor(input * Math.pow(10, decimals)) / Math.pow(10, decimals) }
 
-
+function toggleLoopLight(){
+   loopLight = !loopLight;
+}

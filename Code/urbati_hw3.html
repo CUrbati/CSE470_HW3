@@ -27,9 +27,7 @@
             
             // light defined in eye coords, so no transformation
             vec3 light = lightPosition.xyz;
-            // next line not what I want, but check it outline
-            // this gives the feeling we are moving around cube rather than rotating cube
-            //vec3 light = (modelViewMatrix * lightPosition).xyz;
+
             
             // light vector
             fLight = normalize( light - pos );
@@ -130,6 +128,7 @@
                     <option value="0">Cylinder</option>
                     <option value="1">Hyperboloid</option>
                 </select>
+                <input type="button" id="loopLight" value="Loop Light" onclick="toggleLoopLight()">
             </div>
             <div class="slider" style="display: flex; flex-direction: column; align-items: center;">
                 <label for="shininess">Shininess:</label>
