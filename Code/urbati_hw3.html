@@ -5,23 +5,96 @@
         <title>HW#3:  Lights, Camera, Action</title>
 
         <!-- Vertex Shader -->
-        <script id="vertex-shader" type="x-shader/x-vertex"></script>
-        <!-- Fragment Shader -->
+        <script id="vertex-shader" type="x-shader/x-vertex">
+
+        attribute  vec4 vPosition;
+        attribute  vec3 vNormal;
+
+        uniform mat4 modelViewMatrix;
+        uniform mat4 projectionMatrix;
+        uniform vec4 lightPosition;
+
+        varying vec3 fNormal;
+        varying vec3 fLight;
+        varying vec3 fEye;
+        
+
+        void main()
+        {
+
+            //compute lighting in eye coordinates
+            vec3 pos = (modelViewMatrix * vPosition).xyz;
+            
+            // light defined in eye coords, so no transformation
+            vec3 light = lightPosition.xyz;
+            // next line not what I want, but check it outline
+            // this gives the feeling we are moving around cube rather than rotating cube
+            //vec3 light = (modelViewMatrix * lightPosition).xyz;
+            
+            // light vector
+            fLight = normalize( light - pos );
+
+            // eye is at origin
+            vec3 eyePoint = vec3(0.0, 0.0, 0.0);
+            
+            // eye vector
+            fEye = normalize( eyePoint - pos );
+            
+            vec4 NN = vec4(vNormal,0.0);
+
+            fNormal = normalize( (modelViewMatrix*NN).xyz);
+            
+
+            gl_Position = projectionMatrix * modelViewMatrix * vPosition;
+            
+            // play with these parameters
+            //ambient = vec4(0.0, 0.0, 0.0, 1.0);
+        }
+        </script>
+
         <script id="fragment-shader" type="x-shader/x-fragment">
-            // This is GLSL code (not HTML5)
 
-            precision mediump float;
+        #ifdef GL_ES
+        precision highp float;
+        #endif
 
-            // Color coming in
-            varying vec4 color;
+        uniform vec4 ambientProduct, diffuseProduct, specularProduct;
+        uniform float shininess;
+
+        varying vec3 fNormal;
+        varying vec3 fLight;
+        varying vec3 fEye;
 
 
-            void
-            main()
-            {
-            //pass color to fragment shader
-                gl_FragColor = color;
-            }
+        void
+        main()
+        {
+
+            vec3 N = -normalize( fNormal );
+            vec3 L = normalize( fLight );
+            vec3 E = normalize( fEye );
+            vec3 H = normalize( L + E );
+
+            // Compute terms in the illumination equation
+            vec4 ambient = ambientProduct;
+
+            float Kd = max( dot(L, N), 0.0 );
+            vec4  diffuse = Kd*diffuseProduct;
+
+            float Ks = pow( max(dot(N, H), 0.0), shininess );
+            vec4  specular = Ks * specularProduct;
+            
+            // Play: try making the color red to see where this rule is applied
+            if( dot(L, N) < 0.0 ) {
+                specular = vec4(0.0, 0.0, 0.0, 1.0);
+            } 
+
+
+            vec4 Color = ambient + diffuse +specular;
+            Color.a = 1.0;
+
+            gl_FragColor = Color;
+        }
         </script>
     </head>
 
@@ -31,6 +104,7 @@
         <script type="text/javascript" src="../Common/MV.js"></script>
         <script type="text/javascript" src="urbati_hw3.js"></script>
         <script type="text/javascript" src="urbati_geometry.js"></script>
+        <script type="text/javascript" src="mouseControl.js"></script>
 
         <h1> CSE 470 HW#3: Lights, Camera, Action</h1>
         <div style="align-items: center;">
@@ -44,16 +118,26 @@
                 Oops ... your browser doesn't support the HTML5 canvas element
             </canvas>
         </div>
-        <div class="inputs">
-
+        <div class="inputs" style="display: flex; flex-direction: row; align-items: center;">
+            <div class="selections" style="display: flex; flex-direction: column; align-items: center;">
+                <lable for="materials">Material:</lable>
+                <select id="materials" name="materials" onchange="changeMaterial(this.value)">
+                    <option value="0">Gold</option>
+                    <option value="1">Obsidian</option>
+                </select>
+                <label for="objects">Object:</label>
+                <select id="objects" name="objects" onchange="changeObject(this.value)">
+                    <option value="0">Cylinder</option>
+                    <option value="1">Hyperboloid</option>
+                </select>
+            </div>
+            <div class="slider" style="display: flex; flex-direction: column; align-items: center;">
+                <label for="shininess">Shininess:</label>
+                <input type="range" id="shininess" name="shininess" min="1" max="1000" value="32" step="1" oninput="changeShininess(this.value)">
+                <label for="fov">Field of View:</label>
+                <input type="range" id="fov" name="fov" min="10" max="100" value="60" step="1" oninput="changeFov(this.value)">
+            </div>
         </div>
-        <script type="text/javascript">
-            // Call the main function to start the program
-            window.onload = function() {
-                generateSOR();
-                console.log(vertices);
-            };
-        </script>
     </body>
 
 </html>
