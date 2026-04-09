@@ -340,6 +340,7 @@ window.onload = function init()
    document.getElementById("materials").onchange = function(event) {
       materialNum = parseInt(event.target.value);
       console.log("selected material index: ", materialNum);
+      document.getElementById("shininess").value = matericalList[materialNum].shininess;
 
       ambientProduct = mult(lightAmbient, matericalList[materialNum].ambient);
       diffuseProduct = mult(lightDiffuse, matericalList[materialNum].diffuse);

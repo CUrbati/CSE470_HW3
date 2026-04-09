@@ -68,7 +68,7 @@
         main()
         {
 
-            vec3 N = -normalize( fNormal );
+            vec3 N = normalize( fNormal );
             vec3 L = normalize( fLight );
             vec3 E = normalize( fEye );
             vec3 H = normalize( L + E );
@@ -82,7 +82,7 @@
             float Ks = pow( max(dot(N, H), 0.0), shininess );
             vec4  specular = Ks * specularProduct;
             
-            // Play: try making the color red to see where this rule is applied
+            
             if( dot(L, N) < 0.0 ) {
                 specular = vec4(0.0, 0.0, 0.0, 1.0);
             } 
@@ -109,7 +109,12 @@
             <p><strong>Author: Chester Urbati</strong></p>
             <p><strong>Date: April 8, 2026</strong></p>
             <p><strong>Description:</strong></p>
-            <p>Description</p>
+            <p>This homework assignment focusues on implementing the Phong lighting and shading model.
+                I created SOR objects by paramtering and revolving a curve around the y-axis. 
+                I also implemented the ability to change materials and objects. 
+                I also added the ability to change the field of view and shininess of the material. 
+                I also added mouse controls to rotate the object and zoom in and out.
+            </p>
         </div>
         <div style="align-items: center;">
             <canvas id="gl-canvas" width="512" height="512" style="border:2px solid #000000;">
@@ -122,11 +127,12 @@
                 <select id="materials" name="materials" onchange="changeMaterial(this.value)">
                     <option value="0">Gold</option>
                     <option value="1">Obsidian</option>
+                    <option value="2">Ruby</option>
                 </select>
                 <label for="objects">Object:</label>
                 <select id="objects" name="objects" onchange="changeObject(this.value)">
                     <option value="0">Cylinder</option>
-                    <option value="1">Hyperboloid</option>
+                    <option value="1">Candle</option>
                 </select>
                 <input type="button" id="loopLight" value="Loop Light" onclick="toggleLoopLight()">
             </div>

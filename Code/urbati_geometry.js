@@ -33,6 +33,8 @@ class Material {
 
 var obsidian = new Material (vec4(0.05375, 0.05, 0.06625, 1.0), vec4(0.18275, 0.17, 0.22525, 1.0), vec4(0.332741, 0.328634, 0.346435, 1.0), 0.3);
 var gold = new Material (vec4(0.24725, 0.1995, 0.0745, 1.0), vec4(0.75164, 0.60648, 0.22648, 1.0), vec4(0.628281, 0.555802, 0.366065, 1.0), 0.4);
+var ruby = new Material (vec4(0.1745, 0.01175, 0.01175, 1.0), vec4(0.61424, 0.04136, 0.04136, 1.0), vec4(0.727811, 0.626959, 0.626959, 1.0), 0.6);
+
 
 var temp = vec4(0.0, 0.0, 0.0, 1.0);
 
@@ -43,7 +45,7 @@ var materialSpecScale = 1.0;
 var ambientColor, diffuseColor, specularColor;
 
 
-var matericalList = [gold,obsidian];
+var matericalList = [gold,obsidian, ruby];
 
 function fCylinder(t){
     return 1;
@@ -100,10 +102,11 @@ function generateSOR() {
 
     center = vec3((maxX + minX) / 2, (maxY + minY) / 2, (maxZ + minZ) / 2);
 
+    console.log("vertices length: ", vertices.length);
 }
 
 function fCurve(t){
-    return vec3(0.5 + t*t, t, 1); 
+    return vec3(t*t*t+0.3, t, t*t*t+0.3); 
 }
 
 
@@ -120,7 +123,7 @@ function generateSORCurve() {
     
     //vertices.push(vec3(0, tDomain.min, 0));
     
-    for (let t = tDomain.min; t <= tDomain.max; t += 0.1){
+    for (let t = tDomain.min+0.2; t <= tDomain.max-0.2; t += 0.1){
         for (let theta = thetaDomain.min; theta < thetaDomain.max; theta += 0.1) {
 
             let vertex = SORCurve(theta, t);
@@ -151,41 +154,51 @@ function generateSORCurve() {
     //vertices.push(vec3(0, tDomain.max, 0));
 
     center = vec3((maxX + minX) / 2, (maxY + minY) / 2, (maxZ + minZ) / 2);
-
+    
 }
 
 
 numberOfVertices = vertices.length;
 
-function generateIndices() {
+
+function generateIndices(){
     indices = [];
 
-    //x values that go around the cyclinder
-    const cols = Math.ceil((thetaDomain.max - thetaDomain.min) / 0.1);
-    //y values that go up the cyclinder
-    const rows = Math.floor(vertices.length / cols);
+    //Becuase the way I generated the vertices, I can assume that "rows" or chunks of 63 verticies
+    //correspond to a row of the SOR. So I can use this to generate the indices for the triangles.
+    for (let i = 0; i < vertices.length - 63; i++) 
+    {
+        if((i + 1) % 63 != 0) {
+            indices.push(i);
+            indices.push(i + 1);
+            indices.push(i + 63);
 
-    console.log("cols: ", cols);
-    console.log("rows: ", rows);
-    for (let r = 0; r < rows - 1; r++) {
-        for (let c = 0; c < cols; c++) {
-            let curr = r * cols + c;
-            let next = r * cols + ((c + 1) % cols);
-            let below = (r + 1) * cols + c;
-            let belowNext = (r + 1) * cols + ((c + 1) % cols);
-
-            indices.push(curr);
-            indices.push(below);
-            indices.push(next);
-
-            indices.push(next);
-            indices.push(below);
-            indices.push(belowNext);
+            indices.push(i + 1);
+            indices.push(i + 64);
+            indices.push(i + 63);
         }
+        else {
+            indices.push(i);
+            indices.push(i - 62);
+            indices.push(i + 63);
+
+            indices.push(i - 62);
+            indices.push(i + 1);
+            indices.push(i + 63);
+        }
+
     }
+
+    
+
+    
+
+    
 }
 
+
 function generateNormals() {
+    //Sanity check to make sure the array is empty before we start adding to it.
     normalsArray = [];
     
     //Fill out the normals array with 0s so we can add to them.
@@ -218,6 +231,8 @@ function generateNormals() {
         normalsArray[v3] = add(normalsArray[v3], normal);
     }
 
+
+    //Normalize the normals so they are unit vectors and behave correctly with the lighting model.
     for (let i = 0; i < normalsArray.length; i++) {
         normalsArray[i] = normalize(normalsArray[i]);
     }
